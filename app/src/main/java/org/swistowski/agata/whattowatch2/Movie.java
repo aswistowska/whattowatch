@@ -3,22 +3,27 @@ package org.swistowski.agata.whattowatch2;
 public class Movie implements java.io.Serializable {
 
     public static final String IMAGE_API_BASE = "https://image.tmdb.org/t/p/w500";
+
+    private int mId;
     private String mTitle;
     private String mReleaseDate;
     private String mPosterUrl;
     private double mVoteAverage;
     private String mOverview;
-    private String mDuration;
 
 
-    public Movie(String title, String releaseDate, String posterUrl, double voteAverage,
-                 String overview, String duration) {
+    public Movie(int id, String title, String releaseDate, String posterUrl, double voteAverage,
+                 String overview) {
+        mId = id;
         mTitle = title;
         mReleaseDate = releaseDate;
         mPosterUrl = posterUrl;
         mVoteAverage = voteAverage;
         mOverview = overview;
-        mDuration = duration;
+    }
+
+    public int getId() {
+        return mId;
     }
 
     public String getTitle() {
@@ -39,10 +44,6 @@ public class Movie implements java.io.Serializable {
 
     public String getOverview() {
         return mOverview;
-    }
-
-    public String getDuration() {
-        return mDuration;
     }
 
 }

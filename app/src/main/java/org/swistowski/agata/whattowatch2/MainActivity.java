@@ -1,42 +1,66 @@
 package org.swistowski.agata.whattowatch2;
 
+import android.app.LoaderManager;
 import android.arch.lifecycle.LiveData;
 import android.content.Context;
 import android.content.Intent;
+import android.content.Loader;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.view.Menu;
+import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements MoviesAdapter.MoviesAdapterOnClickHandler {
+public class MainActivity extends AppCompatActivity implements MoviesAdapter.MoviesAdapterOnClickHandler,
+        LoaderManager.LoaderCallbacks<ArrayList<Movie>>, SharedPreferences.OnSharedPreferenceChangeListener {
+
+    private static final int MOVIE_LOADER_ID = 1;
+    private MoviesAdapter mMoviesAdapter;
+    private RecyclerView mRecyclerView;
+    private TextView mEmptyStateTextView;
+    private ProgressBar mLoadingIndicator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ArrayList<Movie> movies = new ArrayList<>();
-        movies.add(new Movie("Deadpool 2", "2018-05-15", "/to0spRl1CMDvyUbOnbb4fTk3VAd.jpg",
-                8, "Wisecracking mercenary Deadpool battles the evil and powerful Cable and other bad guys to save a boy's life.", "120min"));
-        movies.add(new Movie("Deadpool 2", "2018-05-15", "/to0spRl1CMDvyUbOnbb4fTk3VAd.jpg",
-                8, "Wisecracking mercenary Deadpool battles the evil and powerful Cable and other bad guys to save a boy's life.", "120min"));
-        movies.add(new Movie("Deadpool 2", "2018-05-15", "/to0spRl1CMDvyUbOnbb4fTk3VAd.jpg",
-                8, "Wisecracking mercenary Deadpool battles the evil and powerful Cable and other bad guys to save a boy's life.", "120min"));
-
-        RecyclerView recyclerView = findViewById(R.id.rv_movies);
+        mRecyclerView = findViewById(R.id.rv_movies);
+        mEmptyStateTextView = findViewById(R.id.error_view);
+        mEmptyStateTextView.setText(R.string.no_movies);
+        mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
 
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this,calculateNoOfColumns(this));
-        recyclerView.setLayoutManager(gridLayoutManager);
+        mRecyclerView.setLayoutManager(gridLayoutManager);
 
-        MoviesAdapter adapter = new MoviesAdapter(this, this);
-        adapter.setMovies(movies);
-        recyclerView.setAdapter(adapter);
+        mMoviesAdapter = new MoviesAdapter(this, this);
+        mRecyclerView.setAdapter(mMoviesAdapter);
+
+        if (isNetworkAvailable(this)) {
+            LoaderManager loaderManager = getLoaderManager();
+            loaderManager.initLoader(MOVIE_LOADER_ID, null, this);
+            showMovieDataView();
+
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+            preferences.registerOnSharedPreferenceChangeListener(this);
+
+        } else {
+            View loadingIndicator = findViewById(R.id.pb_loading_indicator);
+            loadingIndicator.setVisibility(View.GONE);
+
+            TextView NoInternetTextView = findViewById(R.id.error_view);
+            NoInternetTextView.setText(R.string.no_internet_connection);
+        }
     }
 
     @Override
@@ -73,11 +97,43 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
     }
-    //You can then use the code below to check for internet connections:
-    //
-    //if(isNetworkAvailable(this)) {
-    // Run network query i.e execute FetchDataTask
-    //}
-    //else{
-    //
+
+    private void showMovieDataView() {
+        mEmptyStateTextView.setVisibility(View.INVISIBLE);
+        mRecyclerView.setVisibility(View.VISIBLE);
+    }
+
+    private void showEmptyStateTextView() {
+        mRecyclerView.setVisibility(View.INVISIBLE);
+        mEmptyStateTextView.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public Loader<ArrayList<Movie>> onCreateLoader(int i, Bundle bundle) {
+        mLoadingIndicator.setVisibility(View.VISIBLE);
+        return new GiveMeMyMovieLoader(this, NetworkUtils.getPreferredSortBy(this));
+    }
+
+    @Override
+    public void onLoadFinished(Loader<ArrayList<Movie>> loader, ArrayList<Movie> movies) {
+        mLoadingIndicator.setVisibility(View.INVISIBLE);
+        if (movies.size() == 0) {
+            showEmptyStateTextView();
+        }
+        mMoviesAdapter.setMovies(movies);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<ArrayList<Movie>> loader) {
+
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if(key.equals(getString(R.string.sort_by_key))) {
+            LoaderManager loaderManager = getLoaderManager();
+            loaderManager.restartLoader(MOVIE_LOADER_ID, null, this);
+        }
+    }
+
 }

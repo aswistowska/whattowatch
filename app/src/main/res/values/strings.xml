@@ -22,9 +22,11 @@
     <string name="no_internet_connection">No internet connection.</string>
     <string name="movie_poster">Movie poster</string>
     <string name="movie_detail">Movie Detail</string>
-    <string name="api_key">b73a05f4286a2af4e2caf142d739fcd7</string>
-    <string name="mark_as_favorite">mark_as_favorite</string>
+
+    <string name="mark_as_favorite">Mark as favorite</string>
     <string name="popular">Popular</string>
     <string name="top_rated">Top Rated</string>
     <string name="favorites">Favorites</string>
+
+    <string name="api_key">b73a05f4286a2af4e2caf142d739fcd7</string>
 </resources>

@@ -36,8 +36,8 @@ public class DetailsActivity extends AppCompatActivity {
            TextView releaseDateTextView = findViewById(R.id.releaseDateTextView);
            releaseDateTextView.setText(mMovie.getReleaseDate());
 
-           TextView durationTextView = findViewById(R.id.durationTextView);
-           durationTextView.setText(mMovie.getDuration());
+//           TextView durationTextView = findViewById(R.id.durationTextView);
+//           durationTextView.setText(mMovie.getDuration());
 
            TextView ratingTextView = findViewById(R.id.ratingTextView);
            ratingTextView.setText(Double.toString(mMovie.getVoteAverage()));
