@@ -10,9 +10,10 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import java.util.List;
 
 
-public class DetailsActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks{
+public class DetailsActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<MovieDetails>{
 
     Movie mMovie;
     private static final int MOVIE_DETAILS_LOADER_ID = 1;
@@ -55,15 +56,20 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
 
 
     @Override
-    public Loader onCreateLoader(int i, Bundle bundle) {
-        //int movieId = mMovie.getId();
-        //return new GiveMeMyMovieLoader();
-        return null;
+    public Loader<MovieDetails> onCreateLoader(int i, Bundle bundle) {
+        return new GiveMyMovieDetailsLoader(this, mMovie);
     }
 
     @Override
-    public void onLoadFinished(Loader loader, Object o) {
+    public void onLoadFinished(Loader<MovieDetails> loader, MovieDetails movieDetails) {
+        int runtime = movieDetails.getRuntime();
+        List<MovieReview> movieReviews = movieDetails.getReviews();
+        List<MovieVideo> movieVideos = movieDetails.getVideos();
 
+        // mReviewsAdapter.setReviews(movieReviews);
+        // mVideosAdapter.setVideos(movieVideos);
+        // TextView runtimeTextView = findViewById(R.id.runtimeTextView);
+        // runtimeTextView.setText(Integer.toString(runtime));
     }
 
     @Override
