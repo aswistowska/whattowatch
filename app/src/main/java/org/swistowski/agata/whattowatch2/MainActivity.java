@@ -1,7 +1,6 @@
 package org.swistowski.agata.whattowatch2;
 
 import android.app.LoaderManager;
-import android.arch.lifecycle.LiveData;
 import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
@@ -15,6 +14,7 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -77,6 +77,26 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        switch (item.getItemId()) {
+            case R.id.menuSortPopular:
+                preferences.edit().putString(getString(R.string.sort_by_key),
+                        getString(R.string.sort_by_popular_value)).apply();
+                return true;
+            case R.id.menuSortRating:
+                preferences.edit().putString(getString(R.string.sort_by_key),
+                        getString(R.string.sort_by_highest_rated_value)).apply();
+                return true;
+            case R.id.menuSortFavorite:
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     public static int calculateNoOfColumns(Context context) {

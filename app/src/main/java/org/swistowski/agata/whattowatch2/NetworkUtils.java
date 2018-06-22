@@ -16,8 +16,6 @@ import java.util.Scanner;
 public class NetworkUtils {
 
     private static final String LOG_TAG = NetworkUtils.class.getSimpleName();
-    private static final String MOVIE_POPULAR_URL = "https://api.themoviedb.org/3/movie/popular";
-    private static final String MOVIE_TOP_RATED_URL = "https://api.themoviedb.org/3/movie/top_rated";
     private static final String MOVIE_BASE_URL = "https://api.themoviedb.org/3/movie/";
     Context mContext;
 
@@ -34,13 +32,6 @@ public class NetworkUtils {
         return movies;
     }
 
-    public static String getPreferredSortBy(Context context) {
-        SharedPreferences prefs = PreferenceManager
-                .getDefaultSharedPreferences(context);
-        String keyForSortBy = context.getString(R.string.sort_by_key);
-        String defaultSortBy = context.getString(R.string.sort_by_default);
-        return prefs.getString(keyForSortBy, defaultSortBy);
-    }
 
     public static URL createUrl(String sortBy, String apiKey) {
 
@@ -56,8 +47,12 @@ public class NetworkUtils {
         return url;
     }
 
-    public static URL createMovieUrl (int id, String apiKey) {
-        Uri builtUri = Uri.parse(MOVIE_BASE_URL + id).buildUpon().
+    public static URL createMovieUrl (int id, String type, String apiKey) {
+        String baseUrl = MOVIE_BASE_URL + id;
+        if(type!="") {
+            baseUrl = baseUrl + '/' + type;
+        }
+        Uri builtUri = Uri.parse(baseUrl).buildUpon().
                 appendQueryParameter("api_key", apiKey).build();
 
         URL url = null;
@@ -69,40 +64,49 @@ public class NetworkUtils {
         return url;
     }
 
-//    public static URL getMovieRuntime (int id, String apiKey) {
-//
-//        URL url = createMovieUrl(id, apiKey);
-//        String jsonResponse = null;
-//        try {
-//            jsonResponse = getResponseFromHttpUrl(url);
-//        } catch (IOException e) {
-//            Log.e(LOG_TAG, "Problem making the HTTP request.", e);
-//        }
-//        ArrayList<Movie> movies = MovieJsonUtils.extractMoviesFromJsonString(jsonResponse);
-//        return movies;
-//    }
 
-//    public static URL getMovieVideos(int id, String apiKey) {
-//        URL url = createMovieUrl(id, apiKey);
-//        String jsonResponse = null;
-//        try {
-//            jsonResponse = getResponseFromHttpUrl(url);
-//        } catch (IOException e) {
-//            Log.e(LOG_TAG, "Problem making the HTTP request.", e);
-//        }
-//        return;
-//    }
+    public static int getMovieRuntime (int id, String apiKey) {
 
-//    public static URL getMovieReviews(int id, String apiKey) {
-//        URL url = createMovieUrl(id, apiKey);
-//        String jsonResponse = null;
-//        try {
-//            jsonResponse = getResponseFromHttpUrl(url);
-//        } catch (IOException e) {
-//            Log.e(LOG_TAG, "Problem making the HTTP request.", e);
-//        }
-//        return;
-//    }
+        URL url = createMovieUrl(id,"", apiKey);
+        String jsonResponse = null;
+        try {
+            jsonResponse = getResponseFromHttpUrl(url);
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Problem making the HTTP request.", e);
+        }
+        return MovieJsonUtils.extractMovieRuntimeFromJsonString(jsonResponse);
+    }
+
+
+    public static ArrayList<MovieVideo> getMovieVideos(int id, String apiKey) {
+        URL url = createMovieUrl(id, "videos", apiKey);
+        String jsonResponse = null;
+        try {
+            jsonResponse = getResponseFromHttpUrl(url);
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Problem making the HTTP request.", e);
+        }
+        return MovieJsonUtils.extractMovieVideosFromJsonString(jsonResponse);
+    }
+
+    public static ArrayList<MovieReview> getMovieReviews(int id, String apiKey) {
+        URL url = createMovieUrl(id, "reviews", apiKey);
+        String jsonResponse = null;
+        try {
+            jsonResponse = getResponseFromHttpUrl(url);
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Problem making the HTTP request.", e);
+        }
+        return MovieJsonUtils.extractMovieReviewsFromJsonString(jsonResponse);
+    }
+
+    public static String getPreferredSortBy(Context context) {
+        SharedPreferences prefs = PreferenceManager
+                .getDefaultSharedPreferences(context);
+        String keyForSortBy = context.getString(R.string.sort_by_key);
+        String defaultSortBy = context.getString(R.string.sort_by_default);
+        return prefs.getString(keyForSortBy, defaultSortBy);
+    }
 
 
     public static String getResponseFromHttpUrl(URL url) throws IOException {
@@ -123,4 +127,5 @@ public class NetworkUtils {
             urlConnection.disconnect();
         }
     }
+
 }

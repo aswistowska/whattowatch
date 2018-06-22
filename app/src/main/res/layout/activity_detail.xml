@@ -120,5 +120,33 @@
         app:layout_constraintTop_toBottomOf="@+id/detailPosterImageView" />
 
 
+        <TextView
+            android:visibility="invisible"
+            android:id="@+id/trailersTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:text="@string/trailers"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/overviewTextView"
+            tools:text="Trailers:" />
+
+
+        <include
+            android:visibility="invisible"
+            android:id="@+id/trailersLayout"
+            layout="@layout/list_trailers"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/trailersTextView" />
+
 </android.support.constraint.ConstraintLayout>
 </ScrollView>
