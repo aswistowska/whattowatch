@@ -25,11 +25,11 @@ public class GiveMyMovieDetailsLoader extends AsyncTaskLoader<MovieDetails> {
     @Override
     public MovieDetails loadInBackground() {
 
-        int moviesRuntime = NetworkUtils.getMovieRuntime(mMovie.getId(), String.valueOf(R.string.api_key));
+        int moviesRuntime = NetworkUtils.getMovieRuntime(mMovie.getId(), getContext().getString(R.string.api_key));
 
-        ArrayList<MovieVideo> moviesVideos = NetworkUtils.getMovieVideos(mMovie.getId(), String.valueOf(R.string.api_key));
+        ArrayList<MovieVideo> moviesVideos = NetworkUtils.getMovieVideos(mMovie.getId(), getContext().getString(R.string.api_key));
 
-        ArrayList<MovieReview> moviesReviews = NetworkUtils.getMovieReviews(mMovie.getId(), String.valueOf(R.string.api_key));
+        ArrayList<MovieReview> moviesReviews = NetworkUtils.getMovieReviews(mMovie.getId(), getContext().getString(R.string.api_key));
 
         return new MovieDetails(moviesRuntime, moviesVideos, moviesReviews);
     }
