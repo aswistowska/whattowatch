@@ -137,8 +137,7 @@
             app:layout_constraintTop_toBottomOf="@+id/overviewTextView"
             tools:text="Trailers:" />
 
-
-        <ListView
+        <org.swistowski.agata.whattowatch2.NonScrollListView
             android:id="@+id/trailerList"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -152,7 +151,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/trailersTextView" />
 
-        <ListView
+        <org.swistowski.agata.whattowatch2.NonScrollListView
             android:id="@+id/reviewsList"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

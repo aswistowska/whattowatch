@@ -145,7 +145,6 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
 
     @Override
     public void onLoaderReset(Loader<ArrayList<Movie>> loader) {
-
     }
 
     @Override
