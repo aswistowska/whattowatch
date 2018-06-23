@@ -76,6 +76,11 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
         videoListView.setAdapter(movieVideoAdapter);
         justifyListViewHeightBasedOnChildren(videoListView);
 
+        ListView reviewListView = findViewById(R.id.reviewsList);
+        MovieReviewAdapter movieReviewAdapter = new MovieReviewAdapter(this, movieReviews);
+        reviewListView.setAdapter(movieReviewAdapter);
+        justifyListViewHeightBasedOnChildren(reviewListView);
+
 
         // mReviewsAdapter.setReviews(movieReviews);
         // mVideosAdapter.setVideos(movieVideos);
