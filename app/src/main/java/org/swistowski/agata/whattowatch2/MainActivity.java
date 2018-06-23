@@ -87,12 +87,15 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
             case R.id.menuSortPopular:
                 preferences.edit().putString(getString(R.string.sort_by_key),
                         getString(R.string.sort_by_popular_value)).apply();
+                mRecyclerView.scrollToPosition(0);
                 return true;
             case R.id.menuSortRating:
                 preferences.edit().putString(getString(R.string.sort_by_key),
                         getString(R.string.sort_by_highest_rated_value)).apply();
+                mRecyclerView.scrollToPosition(0);
                 return true;
             case R.id.menuSortFavorite:
+                mRecyclerView.scrollToPosition(0);
                 return true;
         }
 

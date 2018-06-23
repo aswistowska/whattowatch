@@ -79,11 +79,8 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
         MovieReviewAdapter movieReviewAdapter = new MovieReviewAdapter(this, movieReviews);
         reviewListView.setAdapter(movieReviewAdapter);
 
-
-        // mReviewsAdapter.setReviews(movieReviews);
-        // mVideosAdapter.setVideos(movieVideos);
-        // TextView runtimeTextView = findViewById(R.id.runtimeTextView);
-        // runtimeTextView.setText(Integer.toString(runtime));
+         TextView runtimeTextView = findViewById(R.id.durationTextView);
+        runtimeTextView.setText(Integer.toString(runtime) + getString(R.string.min));
     }
 
     @Override
