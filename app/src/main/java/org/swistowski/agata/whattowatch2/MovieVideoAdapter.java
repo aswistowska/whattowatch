@@ -1,6 +1,9 @@
 package org.swistowski.agata.whattowatch2;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -25,6 +28,8 @@ public class MovieVideoAdapter extends ArrayAdapter<MovieVideo> {
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
 
+        final MovieVideo movieVideo = mMovieVideos.get(position);
+
         View listItemView = convertView;
         if (listItemView == null) {
             listItemView = LayoutInflater.from(getContext()).inflate(
@@ -32,10 +37,28 @@ public class MovieVideoAdapter extends ArrayAdapter<MovieVideo> {
         }
 
         Button playButton = listItemView.findViewById(R.id.playButton);
+        playButton.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View view) {
+                watchYoutubeVideo(getContext(), movieVideo.getVideoKey());
+            }
+        });
 
         TextView videoName = listItemView.findViewById(R.id.trailerTitleTextView);
-        videoName.setText(mMovieVideos.get(position).getVideoName());
+        videoName.setText(movieVideo.getVideoName());
 
         return listItemView;
+    }
+
+    public static void watchYoutubeVideo(Context context, String key){
+        Intent appIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + key));
+        Intent webIntent = new Intent(Intent.ACTION_VIEW,
+                Uri.parse("http://www.youtube.com/watch?v=" + key));
+        try {
+            context.startActivity(appIntent);
+        } catch (ActivityNotFoundException ex) {
+            context.startActivity(webIntent);
+        }
     }
 }
