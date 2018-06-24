@@ -95,6 +95,8 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
                 mRecyclerView.scrollToPosition(0);
                 return true;
             case R.id.menuSortFavorite:
+                preferences.edit().putString(getString(R.string.sort_by_key),
+                        getString(R.string.sort_by_favorite_value)).apply();
                 mRecyclerView.scrollToPosition(0);
                 return true;
         }

@@ -64,6 +64,16 @@ public class NetworkUtils {
         return url;
     }
 
+    public static Movie fetchMovie(int id, String apiKey) {
+        URL url = createMovieUrl(id,"", apiKey);
+        String jsonResponse = null;
+        try {
+            jsonResponse = getResponseFromHttpUrl(url);
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Problem making the HTTP request.", e);
+        }
+        return MovieJsonUtils.extractMovieFromJsonString(jsonResponse);
+    }
 
     public static int getMovieRuntime (int id, String apiKey) {
 

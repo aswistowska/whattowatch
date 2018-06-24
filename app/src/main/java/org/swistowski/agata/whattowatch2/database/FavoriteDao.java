@@ -13,6 +13,9 @@ public interface FavoriteDao {
     @Query("SELECT * FROM favorite")
     List<FavoriteEntry> loadAllFavorites();
 
+    @Query("SELECT * FROM favorite WHERE id = :id")
+    List<FavoriteEntry> getFavorite(int id);
+
     @Insert
     void insertFavorite(FavoriteEntry favoriteEntry);
 

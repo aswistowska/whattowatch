@@ -95,4 +95,24 @@ public final class MovieJsonUtils {
         }
         return movieReviews;
     }
+
+    public static Movie extractMovieFromJsonString(String jsonResponse) {
+
+        try {
+            JSONObject currentMovie = new JSONObject(jsonResponse);
+            String title = currentMovie.getString("title");
+            String releaseDate = currentMovie.getString("release_date");
+            String posterUrl = currentMovie.getString("poster_path");
+            double voteAverage = currentMovie.getDouble("vote_average");
+            String overview = currentMovie.getString("overview");
+            int id = currentMovie.getInt("id");
+
+            Movie movie = new Movie(id, title, releaseDate, posterUrl, voteAverage, overview);
+            return  movie;
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

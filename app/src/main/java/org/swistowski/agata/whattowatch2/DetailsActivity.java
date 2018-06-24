@@ -28,6 +28,7 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
     Movie mMovie;
     private AppDatabase mDb;
     private static final int MOVIE_DETAILS_LOADER_ID = 1;
+    private boolean mIsFavorite;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,13 +71,31 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
                    onFavoriteButtonClicked();
                }
            });
+           mIsFavorite = mDb.favoriteDao().getFavorite(mMovie.getId()).size()>0;
+           updateFavoriteText();
        }
+    }
+
+    private void updateFavoriteText() {
+        Button favoriteButton = findViewById(R.id.favoriteButton);
+        if(!mIsFavorite) {
+            favoriteButton.setText(R.string.mark_as_favorite);
+        } else {
+            favoriteButton.setText(R.string.remove_from_favorite);
+        }
     }
 
     private void onFavoriteButtonClicked() {
         FavoriteEntry favoriteEntry = new FavoriteEntry(mMovie.getId());
-        mDb.favoriteDao().insertFavorite(favoriteEntry);
-        Toast.makeText(this, R.string.saved_favorite_movie, Toast.LENGTH_SHORT).show();
+        if(!mIsFavorite) {
+            mDb.favoriteDao().insertFavorite(favoriteEntry);
+            Toast.makeText(this, R.string.saved_favorite_movie, Toast.LENGTH_SHORT).show();
+        } else {
+            mDb.favoriteDao().deleteFavorite(favoriteEntry);
+            Toast.makeText(this, R.string.movie_removed, Toast.LENGTH_SHORT).show();
+        }
+        mIsFavorite = !mIsFavorite;
+        updateFavoriteText();
     }
 
 
