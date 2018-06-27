@@ -159,5 +159,4 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
             loaderManager.restartLoader(MOVIE_LOADER_ID, null, this);
         }
     }
-
 }

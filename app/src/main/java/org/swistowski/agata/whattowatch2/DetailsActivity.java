@@ -30,6 +30,7 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
     private static final int MOVIE_DETAILS_LOADER_ID = 1;
     private boolean mIsFavorite;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,8 +72,18 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
                    onFavoriteButtonClicked();
                }
            });
-           mIsFavorite = mDb.favoriteDao().getFavorite(mMovie.getId()).size()>0;
-           updateFavoriteText();
+           AppExecutors.getInstance().diskIO().execute(new Runnable() {
+               @Override
+               public void run() {
+                   mIsFavorite = mDb.favoriteDao().getFavorite(mMovie.getId()).size()>0;
+                   runOnUiThread(new Runnable() {
+                       @Override
+                       public void run() {
+                           updateFavoriteText();
+                       }
+                   });
+               }
+           });
        }
     }
 
@@ -86,13 +97,24 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
     }
 
     private void onFavoriteButtonClicked() {
-        FavoriteEntry favoriteEntry = new FavoriteEntry(mMovie.getId());
+        final FavoriteEntry favoriteEntry = new FavoriteEntry(mMovie.getId());
         if(!mIsFavorite) {
-            mDb.favoriteDao().insertFavorite(favoriteEntry);
-            Toast.makeText(this, R.string.saved_favorite_movie, Toast.LENGTH_SHORT).show();
+            AppExecutors.getInstance().diskIO().execute(new Runnable() {
+                @Override
+                public void run() {
+                    mDb.favoriteDao().insertFavorite(favoriteEntry);
+                    //Toast.makeText(this, R.string.saved_favorite_movie, Toast.LENGTH_SHORT).show();
+                }
+            });
+
         } else {
-            mDb.favoriteDao().deleteFavorite(favoriteEntry);
-            Toast.makeText(this, R.string.movie_removed, Toast.LENGTH_SHORT).show();
+            AppExecutors.getInstance().diskIO().execute(new Runnable() {
+                @Override
+                public void run() {
+                    mDb.favoriteDao().deleteFavorite(favoriteEntry);
+                    //Toast.makeText(this, R.string.movie_removed, Toast.LENGTH_SHORT).show();
+                }
+            });
         }
         mIsFavorite = !mIsFavorite;
         updateFavoriteText();
