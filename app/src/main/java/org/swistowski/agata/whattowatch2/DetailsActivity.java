@@ -4,15 +4,15 @@ import android.app.LoaderManager;
 import android.content.Intent;
 import android.content.Loader;
 import android.os.Bundle;
+import android.support.v4.app.NavUtils;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
@@ -20,7 +20,6 @@ import org.swistowski.agata.whattowatch2.database.AppDatabase;
 import org.swistowski.agata.whattowatch2.database.FavoriteEntry;
 
 import java.util.ArrayList;
-import java.util.List;
 
 
 public class DetailsActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<MovieDetails>{
@@ -37,7 +36,6 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
         setContentView(R.layout.activity_detail);
 
         mDb = AppDatabase.getInstance(getApplicationContext());
-
 
         Intent intent = getIntent();
        if (intent != null) {
@@ -57,7 +55,7 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
            releaseDateTextView.setText(mMovie.getReleaseDate());
 
            TextView ratingTextView = findViewById(R.id.ratingTextView);
-           ratingTextView.setText(Double.toString(mMovie.getVoteAverage()));
+           ratingTextView.setText(Double.toString(mMovie.getVoteAverage()) + getString(R.string.rating_max_ten));
 
            TextView overviewTextView = findViewById(R.id.overviewTextView);
            overviewTextView.setText(mMovie.getOverview());
@@ -84,15 +82,31 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
                    });
                }
            });
+
+           ActionBar actionBar = this.getSupportActionBar();
+           if(actionBar != null) {
+               actionBar.setDisplayHomeAsUpEnabled(true);
+           }
        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if(id == android.R.id.home) {
+            onBackPressed();
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void updateFavoriteText() {
         Button favoriteButton = findViewById(R.id.favoriteButton);
         if(!mIsFavorite) {
             favoriteButton.setText(R.string.mark_as_favorite);
+            favoriteButton.setBackgroundColor(getResources().getColor(R.color.colorAccent));
         } else {
             favoriteButton.setText(R.string.remove_from_favorite);
+            favoriteButton.setBackgroundColor(getResources().getColor(R.color.colorPrimaryLight));
         }
     }
 

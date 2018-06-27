@@ -95,7 +95,7 @@
             android:layout_marginTop="8dp"
             android:background="@color/colorPrimaryLight"
             android:text="@string/mark_as_favorite"
-            android:textColor="@color/colorTextSecondary"
+            android:textColor="@color/colorTextPrimary"
             app:layout_constraintBottom_toTopOf="@+id/overviewTextView"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.185"

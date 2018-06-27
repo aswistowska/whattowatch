@@ -34,4 +34,6 @@
     <string name="saved_favorite_movie">Movie saved as favorite</string>
     <string name="remove_from_favorite">Remove from favorite</string>
     <string name="movie_removed">Movie removed</string>
+    <string name="rating_max_ten">/10</string>
+    <string name="play">play</string>
 </resources>

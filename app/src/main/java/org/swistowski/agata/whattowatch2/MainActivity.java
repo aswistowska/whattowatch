@@ -147,7 +147,12 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
         }
         mMoviesAdapter.setMovies(movies);
     }
+        /*
+        gdzieś tutaj chyba powinnam ustawić coś, że jak favority są 0 to reszta ma się i tak odświeżyć normalnie :P
+        ale za cholerę nie pamiętam co i jak tam było... ach ta skleroza :P
 
+        Kocham Cię !
+         */
     @Override
     public void onLoaderReset(Loader<ArrayList<Movie>> loader) {
     }

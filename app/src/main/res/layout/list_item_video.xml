@@ -14,7 +14,9 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
         android:layout_marginStart="8dp"
-        android:text="@string/button" />
+        android:background="@color/colorPrimaryDark"
+        android:textColor="@color/colorTextIcons"
+        android:text="@string/play" />
 
     <TextView
         android:id="@+id/trailerTitleTextView"
@@ -24,5 +26,6 @@
         android:layout_marginLeft="8dp"
         android:layout_marginStart="8dp"
         tools:text="Trailer"
+        android:textColor="@color/colorTextSecondary"
         android:layout_gravity="center_vertical"/>
 </LinearLayout>
