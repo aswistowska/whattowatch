@@ -1,15 +1,18 @@
 package org.swistowski.agata.whattowatch2;
 
 import android.app.LoaderManager;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.preference.PreferenceManager;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.annotation.Nullable;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
@@ -19,7 +22,10 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import org.swistowski.agata.whattowatch2.database.FavoriteEntry;
+
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements MoviesAdapter.MoviesAdapterOnClickHandler,
         LoaderManager.LoaderCallbacks<ArrayList<Movie>>, SharedPreferences.OnSharedPreferenceChangeListener {
@@ -40,19 +46,19 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
         mEmptyStateTextView.setText(R.string.no_movies);
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
 
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(this,calculateNoOfColumns(this));
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, calculateNoOfColumns(this));
         mRecyclerView.setLayoutManager(gridLayoutManager);
 
         mMoviesAdapter = new MoviesAdapter(this, this);
         mRecyclerView.setAdapter(mMoviesAdapter);
 
         if (isNetworkAvailable(this)) {
-            LoaderManager loaderManager = getLoaderManager();
-            loaderManager.initLoader(MOVIE_LOADER_ID, null, this);
-            showMovieDataView();
-
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
             preferences.registerOnSharedPreferenceChangeListener(this);
+
+            ifFavoritePreferenceSelected(preferences, getString(R.string.sort_by_key));
+            showMovieDataView();
+
 
         } else {
             View loadingIndicator = findViewById(R.id.pb_loading_indicator);
@@ -109,7 +115,7 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
         float dpWidth = displayMetrics.widthPixels / displayMetrics.density;
         int scalingFactor = 200;
         int noOfColumns = (int) (dpWidth / scalingFactor);
-        if(noOfColumns < 2)
+        if (noOfColumns < 2)
             noOfColumns = 2;
         return noOfColumns;
     }
@@ -144,24 +150,55 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
         mLoadingIndicator.setVisibility(View.INVISIBLE);
         if (movies.size() == 0) {
             showEmptyStateTextView();
+        } else {
+            showMovieDataView();
         }
         mMoviesAdapter.setMovies(movies);
     }
-        /*
-        gdzieś tutaj chyba powinnam ustawić coś, że jak favority są 0 to reszta ma się i tak odświeżyć normalnie :P
-        ale za cholerę nie pamiętam co i jak tam było... ach ta skleroza :P
 
-        Kocham Cię !
-         */
     @Override
     public void onLoaderReset(Loader<ArrayList<Movie>> loader) {
     }
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if(key.equals(getString(R.string.sort_by_key))) {
-            LoaderManager loaderManager = getLoaderManager();
-            loaderManager.restartLoader(MOVIE_LOADER_ID, null, this);
+        ifFavoritePreferenceSelected(sharedPreferences, key);
+    }
+
+    private void ifFavoritePreferenceSelected(SharedPreferences sharedPreferences, String key) {
+        if (key.equals(getString(R.string.sort_by_key))) {
+            String selectedOption = sharedPreferences.getString(key, "");
+            MainViewModel viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+
+            if (selectedOption.equals(getString(R.string.sort_by_favorite_value))) {
+                viewModel.getFavorite().observe(this, new Observer<List<FavoriteEntry>>() {
+                    @Override
+                    public void onChanged(@Nullable final List<FavoriteEntry> favoriteEntries) {
+                        AppExecutors.getInstance().networkIO().execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                final ArrayList<Movie> movies =  NetworkUtils.fetchFavoriteMovies(favoriteEntries, getString(R.string.api_key));
+                                if (movies.size() == 0) {
+                                    showEmptyStateTextView();
+                                } else {
+                                    showMovieDataView();
+                                }
+                                AppExecutors.getInstance().mainThread().execute(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        mMoviesAdapter.setMovies(movies);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+            else {
+                viewModel.getFavorite().removeObservers(this);
+                LoaderManager loaderManager = getLoaderManager();
+                loaderManager.restartLoader(MOVIE_LOADER_ID, null, this);
+            }
         }
     }
 }

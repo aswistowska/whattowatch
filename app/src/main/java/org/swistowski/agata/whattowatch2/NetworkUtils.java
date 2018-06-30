@@ -5,12 +5,15 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import org.swistowski.agata.whattowatch2.database.FavoriteEntry;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class NetworkUtils {
@@ -138,4 +141,19 @@ public class NetworkUtils {
         }
     }
 
+    /**
+     * Returns movie list for given favorites ids
+     */
+    public static ArrayList<Movie> fetchFavoriteMovies(List<FavoriteEntry> favorites, String apiKey) {
+        ArrayList<Movie> movies = new ArrayList<>();
+
+        for(int i = 0; i < favorites.size(); i++) {
+            FavoriteEntry favoriteEntry = favorites.get(i);
+            Movie movie = NetworkUtils.fetchMovie(favoriteEntry.getId(), apiKey);
+            if(movie != null) {
+                movies.add(movie);
+            }
+        }
+        return movies;
+    }
 }
