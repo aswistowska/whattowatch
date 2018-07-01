@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -31,10 +32,13 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
         LoaderManager.LoaderCallbacks<ArrayList<Movie>>, SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final int MOVIE_LOADER_ID = 1;
+    private static final String LIST_STATE_KEY = "layout_state";
     private MoviesAdapter mMoviesAdapter;
     private RecyclerView mRecyclerView;
     private TextView mEmptyStateTextView;
     private ProgressBar mLoadingIndicator;
+    private GridLayoutManager mGridLayoutManager;
+    private Parcelable mListState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,27 +50,17 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
         mEmptyStateTextView.setText(R.string.no_movies);
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
 
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, calculateNoOfColumns(this));
-        mRecyclerView.setLayoutManager(gridLayoutManager);
+        mGridLayoutManager = new GridLayoutManager(this, calculateNoOfColumns(this));
+        mRecyclerView.setLayoutManager(mGridLayoutManager);
 
         mMoviesAdapter = new MoviesAdapter(this, this);
         mRecyclerView.setAdapter(mMoviesAdapter);
 
-        if (isNetworkAvailable(this)) {
-            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-            preferences.registerOnSharedPreferenceChangeListener(this);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        preferences.registerOnSharedPreferenceChangeListener(this);
 
-            ifFavoritePreferenceSelected(preferences, getString(R.string.sort_by_key));
-            showMovieDataView();
-
-
-        } else {
-            View loadingIndicator = findViewById(R.id.pb_loading_indicator);
-            loadingIndicator.setVisibility(View.GONE);
-
-            TextView NoInternetTextView = findViewById(R.id.error_view);
-            NoInternetTextView.setText(R.string.no_internet_connection);
-        }
+        reloadMovies(preferences, false);
+        showMovieDataView();
     }
 
     @Override
@@ -162,12 +156,14 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        ifFavoritePreferenceSelected(sharedPreferences, key);
+        if (key.equals(getString(R.string.sort_by_key))) {
+            reloadMovies(sharedPreferences, true);
+        }
     }
 
-    private void ifFavoritePreferenceSelected(SharedPreferences sharedPreferences, String key) {
-        if (key.equals(getString(R.string.sort_by_key))) {
-            String selectedOption = sharedPreferences.getString(key, "");
+    private void reloadMovies(SharedPreferences sharedPreferences, boolean restart) {
+        if (isNetworkAvailable(this)) {
+            String selectedOption = sharedPreferences.getString(getString(R.string.sort_by_key), "");
             MainViewModel viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
 
             if (selectedOption.equals(getString(R.string.sort_by_favorite_value))) {
@@ -177,7 +173,7 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
                         AppExecutors.getInstance().networkIO().execute(new Runnable() {
                             @Override
                             public void run() {
-                                final ArrayList<Movie> movies =  NetworkUtils.fetchFavoriteMovies(favoriteEntries, getString(R.string.api_key));
+                                final ArrayList<Movie> movies = NetworkUtils.fetchFavoriteMovies(favoriteEntries, getString(R.string.api_key));
                                 if (movies.size() == 0) {
                                     showEmptyStateTextView();
                                 } else {
@@ -193,12 +189,23 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
                         });
                     }
                 });
-            }
-            else {
+            } else {
                 viewModel.getFavorite().removeObservers(this);
                 LoaderManager loaderManager = getLoaderManager();
-                loaderManager.restartLoader(MOVIE_LOADER_ID, null, this);
+                if(restart) {
+                    loaderManager.restartLoader(MOVIE_LOADER_ID, null, this);
+                } else {
+                    loaderManager.initLoader(MOVIE_LOADER_ID, null, this);
+                }
             }
+        } else {
+            showEmptyStateTextView();
+            View loadingIndicator = findViewById(R.id.pb_loading_indicator);
+            loadingIndicator.setVisibility(View.GONE);
+
+            TextView NoInternetTextView = findViewById(R.id.error_view);
+            NoInternetTextView.setText(R.string.no_internet_connection);
         }
+
     }
 }
