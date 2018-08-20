@@ -10,13 +10,13 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -32,13 +32,11 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
         LoaderManager.LoaderCallbacks<ArrayList<Movie>>, SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final int MOVIE_LOADER_ID = 1;
-    private static final String LIST_STATE_KEY = "layout_state";
     private MoviesAdapter mMoviesAdapter;
     private RecyclerView mRecyclerView;
     private TextView mEmptyStateTextView;
     private ProgressBar mLoadingIndicator;
     private GridLayoutManager mGridLayoutManager;
-    private Parcelable mListState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,9 +55,10 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
         mRecyclerView.setAdapter(mMoviesAdapter);
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        preferences.unregisterOnSharedPreferenceChangeListener(this);
         preferences.registerOnSharedPreferenceChangeListener(this);
 
-        reloadMovies(preferences, false);
+        reloadMovies(preferences);
         showMovieDataView();
     }
 
@@ -136,11 +135,13 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
     @Override
     public Loader<ArrayList<Movie>> onCreateLoader(int i, Bundle bundle) {
         mLoadingIndicator.setVisibility(View.VISIBLE);
+        Log.v("MainActivity", "onCreateLoader");
         return new GiveMeMyMovieLoader(this, NetworkUtils.getPreferredSortBy(this));
     }
 
     @Override
     public void onLoadFinished(Loader<ArrayList<Movie>> loader, ArrayList<Movie> movies) {
+        Log.v("MainActivity", "onLoadFinished");
         mLoadingIndicator.setVisibility(View.INVISIBLE);
         if (movies.size() == 0) {
             showEmptyStateTextView();
@@ -157,11 +158,13 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (key.equals(getString(R.string.sort_by_key))) {
-            reloadMovies(sharedPreferences, true);
+            LoaderManager loaderManager = getLoaderManager();
+            loaderManager.destroyLoader(MOVIE_LOADER_ID);
+            reloadMovies(sharedPreferences);
         }
     }
 
-    private void reloadMovies(SharedPreferences sharedPreferences, boolean restart) {
+    private void reloadMovies(SharedPreferences sharedPreferences) {
         if (isNetworkAvailable(this)) {
             String selectedOption = sharedPreferences.getString(getString(R.string.sort_by_key), "");
             MainViewModel viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
@@ -174,14 +177,15 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
                             @Override
                             public void run() {
                                 final ArrayList<Movie> movies = NetworkUtils.fetchFavoriteMovies(favoriteEntries, getString(R.string.api_key));
-                                if (movies.size() == 0) {
-                                    showEmptyStateTextView();
-                                } else {
-                                    showMovieDataView();
-                                }
                                 AppExecutors.getInstance().mainThread().execute(new Runnable() {
                                     @Override
                                     public void run() {
+                                        if (movies.size() == 0) {
+                                            showEmptyStateTextView();
+                                        } else {
+                                            showMovieDataView();
+                                        }
+
                                         mMoviesAdapter.setMovies(movies);
                                     }
                                 });
@@ -192,11 +196,7 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.Mov
             } else {
                 viewModel.getFavorite().removeObservers(this);
                 LoaderManager loaderManager = getLoaderManager();
-                if(restart) {
-                    loaderManager.restartLoader(MOVIE_LOADER_ID, null, this);
-                } else {
-                    loaderManager.initLoader(MOVIE_LOADER_ID, null, this);
-                }
+                loaderManager.initLoader(MOVIE_LOADER_ID, null, this);
             }
         } else {
             showEmptyStateTextView();

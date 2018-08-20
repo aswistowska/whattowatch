@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">What To Watch</string>
 
-    <!-- TODO enter your API key here -->
-    <string name="api_key">b73a05f4286a2af4e2caf142d739fcd7</string>
+    <!--TODO add your api key to that String -->
+    <string name="api_key"></string>
 
     <string name="settings_menu_item">Settings</string>
     <string name="settings_title">Movie Settings</string>
